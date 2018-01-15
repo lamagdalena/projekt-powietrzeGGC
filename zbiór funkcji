@@ -8,9 +8,7 @@ def get_measuring_stations():
     return dane
 
 def get_measuring_stations_for_city(city):
-    URL = 'http://api.gios.gov.pl/pjp-api/rest/station/findAll'
-    r = requests.get(URL)
-    data = json.loads(r.text)
+    data = get_measuring_stations()
     stacje_w_miescie = []
     for slownik in data:
         if slownik['city'] != None:
@@ -20,7 +18,7 @@ def get_measuring_stations_for_city(city):
             if slownik['stationName'] == city:
                 stacje_w_miescie.append(slownik)
     if len(stacje_w_miescie) == 0:
-        return 'Brak Danych'
+        return 'Brak danych'
     else:
         return stacje_w_miescie
     
