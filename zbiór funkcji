@@ -25,8 +25,15 @@ def get_measuring_stations_for_city(city):
 def get_sensors(station_id):
     URL = 'http://api.gios.gov.pl/pjp-api/rest/station/sensors/{}'.format(station_id)
     s = requests.get(URL)
-    tresc = json.loads(s.text)
-    return tresc
+    def json_validator(s):
+        try:
+            json.loads(s.text)
+            return True
+        except ValueError as error:
+            return False
+    if json_validator(s) is True:
+        tresc = json.loads(s.text)
+        return tresc
 
 def get_sensors_for_city(city):
     stacja = get_measuring_stations_for_city(city)
@@ -39,26 +46,31 @@ def get_sensors_for_city(city):
 def stan_zanieczyszczen_dla_stacji(station_id):
     stanowiska = get_sensors(station_id)
     dane = []
-    for ident in stanowiska:
-        URL = 'http://api.gios.gov.pl/pjp-api/rest/data/getData/{}'.format(ident['id'])
-        b = requests.get(URL)
-        wynik = json.loads(b.text)
-        dane.append(wynik)
-    return dane
+    if type(stanowiska) == list:
+        for ident in stanowiska:
+            URL = 'http://api.gios.gov.pl/pjp-api/rest/data/getData/{}'.format(ident['id'])
+            b = requests.get(URL)
+            wynik = json.loads(b.text)
+            dane.append(wynik)
+        return dane
 
 def poziom_zagrożenia_dla_stacji(station_id):
     wyniki = stan_zanieczyszczen_dla_stacji(station_id)
-    for slow in wyniki:
-        if slow['key'] == 'PM10':
-            if type(slow['values'][0]['value']) == float:
-                if slow['values'][0]['value'] <= 50.00:
-                    print('Poziom dopuszalny')
-                elif slow['values'][0]['value'] <= 200.00:
-                    print('Poziom informowania')
-                elif slow['values'][0]['value'] >= 300.00:
-                    print('Poziom alarmowy')
-            else:
-                print('Brak aktualnych danych dla PM10.')
+    if type(wyniki) == list:
+        for slow in wyniki:
+            if slow['key'] == 'PM10':
+                if type(slow['values'][0]['value']) == float:
+                    if slow['values'][0]['value'] <= 50.00:
+                        print('Poziom dopuszalny')
+                    elif slow['values'][0]['value'] <= 200.00:
+                        print('Poziom informowania')
+                    elif slow['values'][0]['value'] >= 300.00:
+                        print('Poziom alarmowy')
+                else:
+                    print('Brak aktualnych danych dla PM10.')
+    else:
+        return 'Brak danych'
+        
 
 
 def current_state_for_city(city):
