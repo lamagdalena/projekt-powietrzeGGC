@@ -32,27 +32,29 @@ def get_sensors(station_id):
         except ValueError as error:
             return False
     if json_validator(s) is True:
-        tresc = json.loads(s.text)
-        return tresc
+        lista_stanowisk_pomiarowych = json.loads(s.text)
+        return lista_stanowisk_pomiarowych
 
 def get_sensors_for_city(city):
-    stacja = get_measuring_stations_for_city(city)
-    if stacja == 'Brak danych':
+    stacje = get_measuring_stations_for_city(city)
+    stanowiska_w_miescie = []
+    if stacje == 'Brak danych':
         return 'Brak danych'
     else:
-        for slown in stacja:
-            return get_sensors(slown['id'])
+        for slown in stacje:
+            stanowiska_w_miescie.append(get_sensors(slown['id']))
+        return stanowiska_w_miescie
         
 def stan_zanieczyszczen_dla_stacji(station_id):
     stanowiska = get_sensors(station_id)
-    dane = []
+    wskazania_dla_stacji = []
     if type(stanowiska) == list:
         for ident in stanowiska:
             URL = 'http://api.gios.gov.pl/pjp-api/rest/data/getData/{}'.format(ident['id'])
             b = requests.get(URL)
             wynik = json.loads(b.text)
-            dane.append(wynik)
-        return dane
+            wskazania_dla_stacji.append(wynik)
+        return wskazania_dla_stacji
 
 def poziom_zagrożenia_dla_stacji(station_id):
     wyniki = stan_zanieczyszczen_dla_stacji(station_id)
@@ -61,13 +63,13 @@ def poziom_zagrożenia_dla_stacji(station_id):
             if slow['key'] == 'PM10':
                 if type(slow['values'][0]['value']) == float:
                     if slow['values'][0]['value'] <= 50.00:
-                        print('Poziom dopuszalny')
+                        return 'Poziom dopuszalny'
                     elif slow['values'][0]['value'] <= 200.00:
-                        print('Poziom informowania')
+                        return 'Poziom informowania'
                     elif slow['values'][0]['value'] >= 300.00:
-                        print('Poziom alarmowy')
+                        return 'Poziom alarmowy'
                 else:
-                    print('Brak aktualnych danych dla PM10.')
+                    return 'Brak aktualnych danych dla PM10.'
     else:
         return 'Brak danych'
         
