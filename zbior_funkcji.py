@@ -56,7 +56,7 @@ def stan_zanieczyszczen_dla_stacji(station_id):
             wskazania_dla_stacji.append(wynik)
         return wskazania_dla_stacji
 
-def poziom_zagrożenia_dla_stacji(station_id):
+def poziom_zagrozenia_dla_stacji(station_id):
     wyniki = stan_zanieczyszczen_dla_stacji(station_id)
     if type(wyniki) == list:
         for slow in wyniki:
@@ -78,13 +78,7 @@ def poziom_zagrożenia_dla_stacji(station_id):
 def current_state_for_city(city):
     stan_pomiar = get_sensors_for_city(city)
     stan_miasto = []
-    aktualny_stan_miasto_CO = []
-    aktualny_stan_miasto_PM10 = []
-    aktualny_stan_miasto_C6H6 = []
-    aktualny_stan_miasto_NO2 = []
-    aktualny_stan_miasto_PM25 = []
-    aktualny_stan_miasto_O3 = []
-    aktualny_stan_miasto_SO2 = []
+
     
     if stan_pomiar == 'Brak danych':
         return 'Brak danych'
@@ -96,54 +90,21 @@ def current_state_for_city(city):
                 wynik1 = json.loads(f.text)
                 stan_miasto.append(wynik1)
     
+    aktualne_pomiary = []
+    
     for y in stan_miasto:
-        if y['key'] == 'CO' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_CO.append(y['values'][0]['value'])
-        elif y['key'] == 'PM10' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_PM10.append(y['values'][0]['value'])
-        elif y['key'] == 'C6H6' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_C6H6.append(y['values'][0]['value'])
-        elif y['key'] == 'NO2' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_NO2.append(y['values'][0]['value'])
-        elif y['key'] == 'PM2.5' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_PM25.append(y['values'][0]['value'])
-        elif y['key'] == 'O3' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_O3.append(y['values'][0]['value'])
-        elif y['key'] == 'SO2' and y['values'][0]['value'] != None:
-            aktualny_stan_miasto_SO2.append(y['values'][0]['value'])
+        if y['values'][0]['value'] != None:
+            aktualne_pomiary.append({y['key'] : y['values'][0]['value']})
+                      
+                  
+    merged_measures = defaultdict(list)
+    for slowniki in aktualne_pomiary:
+        for key, value in chain(slowniki.items()):
+            merged_measures[key].append(value)
     
-    srednie_wskazania = []   
-    if len(aktualny_stan_miasto_CO) > 0:
-        midCO = sum(aktualny_stan_miasto_CO) / len(aktualny_stan_miasto_CO)
-        srednie_wskazania.append({'CO' : midCO})
+    totally_merged_measures = []
+    for k, v in merged_measures.items():
+        totally_merged_measures.append({k : ((sum(v) / len(v)))})
         
-    if len(aktualny_stan_miasto_PM10) > 0:
-        midPM10 = sum(aktualny_stan_miasto_PM10) / len(aktualny_stan_miasto_PM10)
-        srednie_wskazania.append({'PM10' : midPM10})
-        
-    if len(aktualny_stan_miasto_C6H6) > 0:
-        midC6H6 = sum(aktualny_stan_miasto_C6H6) / len(aktualny_stan_miasto_C6H6)
-        srednie_wskazania.append({'C6H6' : midC6H6})
-    
-    if len(aktualny_stan_miasto_NO2) > 0:
-        midNO2 = sum(aktualny_stan_miasto_NO2) / len(aktualny_stan_miasto_NO2)
-        srednie_wskazania.append({'NO2' : midNO2})
-    
-    if len(aktualny_stan_miasto_PM25) > 0:
-        midPM25 = sum(aktualny_stan_miasto_PM25) / len(aktualny_stan_miasto_PM25)
-        srednie_wskazania.append({'PM2.5' : midPM25})
-    
-    if len(aktualny_stan_miasto_O3) > 0:
-        midO3 = sum(aktualny_stan_miasto_O3) / len(aktualny_stan_miasto_O3)
-        srednie_wskazania.append({'O3' : midO3})
-    
-    if len(aktualny_stan_miasto_SO2) > 0:
-        midSO2 = sum(aktualny_stan_miasto_SO2) / len(aktualny_stan_miasto_SO2)
-        srednie_wskazania.append({'SO2' : midSO2})
-        
-       
-    if len(srednie_wskazania) == 0:
-        return 'Brak aktualnych danych'
-    else:
-        return srednie_wskazania
+    return totally_merged_measures
     
