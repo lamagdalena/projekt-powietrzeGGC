@@ -31,20 +31,20 @@ def stan_zanieczyszczen_dla_stacji(station_id):
             dane.append(wynik)
         return dane
 
-def poziom_zagrożenia_dla_stacji(station_id):
+def poziom_zagrozenia_dla_stacji(station_id):
     wyniki = stan_zanieczyszczen_dla_stacji(station_id)
     if type(wyniki) == list:
         for slow in wyniki:
             if slow['key'] == 'PM10':
                 if type(slow['values'][0]['value']) == float:
                     if slow['values'][0]['value'] <= 50.00:
-                        print('Poziom dopuszalny')
+                        return 'Poziom dopuszalny'
                     elif slow['values'][0]['value'] <= 200.00:
-                        print('Poziom informowania')
+                        return 'Poziom informowania'
                     elif slow['values'][0]['value'] >= 300.00:
-                        print('Poziom alarmowy')
+                        return 'Poziom alarmowy'
                 else:
-                    print('Brak aktualnych danych dla PM10.')
+                    return 'Brak aktualnych danych dla PM10.'
     else:
         return 'Brak danych'
    
