@@ -78,7 +78,6 @@ def poziom_zagrozenia_dla_stacji(station_id):
 def current_state_for_city(city):
     stan_pomiar = get_sensors_for_city(city)
     stan_miasto = []
-
     
     if stan_pomiar == 'Brak danych':
         return 'Brak danych'
@@ -96,7 +95,6 @@ def current_state_for_city(city):
         if y['values'][0]['value'] != None:
             aktualne_pomiary.append({y['key'] : y['values'][0]['value']})
                       
-                  
     merged_measures = defaultdict(list)
     for slowniki in aktualne_pomiary:
         for key, value in chain(slowniki.items()):
